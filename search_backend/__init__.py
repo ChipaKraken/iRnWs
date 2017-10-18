@@ -22,7 +22,7 @@ def read_all_files():
 def index_files():
 	index = defaultdict(defaultdict(list).copy)
 	for id, file in enumerate(files):
-		doc = file['doc'].decode('utf-8')
+		doc = file['doc']
 		for start, end in tokenizer.span_tokenize(doc):
 			token = doc[start:end].lower()
 			if token in stopwords:
