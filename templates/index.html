@@ -7,10 +7,9 @@
 	<meta name="keywords" content="search, information retrieval, web">
 
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-beta/css/bootstrap.css">
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.5/umd/popper.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-beta/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> <!-- Compiled and minified CSS -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
 	<title>Yoctle: a tiny web search engine</title>
 
 	<script>
@@ -26,16 +25,15 @@
 					})
 				}).done(function (response) {
 					$('div.result-area').html('');
-					var $list = $('<ol></ol>').addClass('list-group');
+					var $list = $('<ul id="target"></ul>');
 					$('div.result-area').append($list);
 					console.log(response);
 					$.each(response.results, function(i, item){
 						$list.append(
 							$('<li></li>')
-								.addClass('card-body list-group-item')
+								.addClass('card-panel')
 								.append(
 									$('<a></a>')
-										.addClass('card-title h5')
 										.attr('href', item.href)
 										.text(item.title)
 								)
@@ -46,6 +44,7 @@
 								)
 						);
 					});
+					Materialize.showStaggeredList('#target');
 				}).fail(function (error) {
 					$('div.result-area').html('An error occured while performing the search. Try using our <a href="https://www.google.com">competitor<a>.');
 					console.log(error);
@@ -56,35 +55,35 @@
 	</script>
 </head>
 <body>
-	<div class="container">
-	<header class="sticky-top">
-	<nav class="navbar navbar-expand-lg bg-light">
-		<i class="navbar-brand fa fa-graduation-cap"></i>
-		<div>
+	<nav>
+		<div class="nav-wrapper">
 			<form class="form-inline" role="search">
-				<div class="form-group">
-					<div class="input-group">
-						<input class="form-control" type="text" name="q" placeholder="Search">
-						<span class="input-group-btn"><button class="btn btn-outline-secondary" type="submit"><i class="fa fa-search"></i></button></span>
-					</div>
+				<div class="input-field">
+					<input name="q" id="search" type="search" required>
+					<label class="label-icon" for="search"><i class="material-icons">search</i></label>
+					<i class="material-icons">close</i>
 				</div>
 			</form>
 		</div>
 	</nav>
-	</header>
-
-	<div class="card"><div class="card-body result-area">You will see search results here.</div></div>
-
-	<footer class="footer">
-		<hr>
+	<div class="container">
 		<div class="row">
-			<div class="col-md-8">
-			</div>
-			<div class="col-md-4">
-				<p class="muted pull-right">© Yoctle Enterprises Limited, 2017</p>
+			<div class="card-panel">
+				<span>You will see search results here.</span>
 			</div>
 		</div>
-	</footer>
+		<div class="result-area"></div>
+
+		<footer class="footer">
+			<hr>
+			<div class="row">
+				<div class="col m8">
+				</div>
+				<div class="col m4">
+					<p class="muted pull-right">© iRnWs by ChipaKraken, 2017</p>
+				</div>
+			</div>
+		</footer>
 	</div>
 </body>
 </html>
