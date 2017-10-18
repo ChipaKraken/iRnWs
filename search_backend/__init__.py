@@ -43,13 +43,15 @@ def search(query_string):
 	temp_data = {}
 	for word in re.findall('\w+', query_string):
 		if word in stopwords:
-				continue
+			continue
 		search_result = google.get(stemmer.stem(word))
+		if search_result == None:
+			continue
 		for x in search_result:
-			search_results[x]+=1
+			search_results[x]+=len(search_result[x])
 			temp_data[x]=search_result[x][0]
-	sorted(search_results.items(), key=lambda k_v: k_v[1], reverse=True)
-	for x in search_results:
+	search_results = sorted(search_results.items(), key=lambda k_v: k_v[1], reverse=True)
+	for x,y in search_results:
 		result_list.append({
 				'title': files[x]['name'],
 				'snippet': files[x]['doc'][temp_data[x]-100:temp_data[x]+100],
