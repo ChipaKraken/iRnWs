@@ -1,10 +1,6 @@
 language: python
 services:
   - postgresql
-before_install:
-  - sudo apt-get install unzip
-  - wget https://docs.python.org/3/archives/python-3.6.3-docs-text.zip
-  - unzip python-3.6.3-docs-text.zip
 script:
   - echo 0
 deploy:
