@@ -42,6 +42,8 @@ def search(query_string):
 	search_results = defaultdict(int)
 	temp_data = {}
 	for word in re.findall('\w+', query_string):
+		if word in stopwords:
+				continue
 		search_result = google.get(stemmer.stem(word))
 		for x in search_result:
 			search_results[x]+=1
