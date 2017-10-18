@@ -1,7 +1,7 @@
 # encoding=utf8
 import os
 import nltk
-nltk.download()
+nltk.download('stopwords')
 from nltk.tokenize import RegexpTokenizer
 from nltk.stem.snowball import EnglishStemmer
 from nltk.corpus import stopwords
