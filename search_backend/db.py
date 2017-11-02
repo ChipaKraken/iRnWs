@@ -1,30 +1,37 @@
 from sqlalchemy import Table, Column, Integer, String, MetaData, ForeignKey, create_engine
-# from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql import exists
+
 engine = create_engine('postgresql://python:jylan@localhost/kraken')
 metadata = MetaData()
-
-from sqlalchemy import Column, String, Integer, ForeignKey
-from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
-
 Base = declarative_base()
+Base.metadata.bind = engine
 
-class Person(Base):
-	__tablename__ = 'person'
-	id = Column(Integer, primary_key=True)
-	name = Column(String)
+class Docs(Base):
+	__tablename__ = 'docs'
+	id = Column(Integer, primary_key=True, autoincrement=True)
+	name = Column(String, unique=True)
 
-words = Table('words',
-	metadata,
-	Column('id', Integer, primary_key=True),
-	Column('word', String)
-)
-with engine.connect() as conn:
-	ins = words.select()
-	# ins = words.insert().values(word=['number','kraken', 'eshkere']).returning(Column('id'))
-	result = conn.execute(ins)
-	# # print dir(result)
-	# # conn.execute(a)
-	# # a = conn.execute("INSERT INTO public.words(word)VALUES ('number');")
-	for x in result:
-		print x
+class Words(Base):
+	__tablename__ = 'words'
+	id = Column(Integer, primary_key=True, autoincrement=True)
+	name = Column(String, unique=True)
+
+class Index(Base):
+	__tablename__ = 'index'
+	id = Column(Integer, primary_key=True, autoincrement=True)
+	doc_id = Column(Integer, ForeignKey(Docs.id))
+	word_id = Column(Integer, ForeignKey(Words.id))
+	beg = Column(Integer)
+
+def doc_exists(name):
+	return session.query(exists().where(Docs.name==name)).scalar()
+
+def word_exists(name):
+	return session.query(exists().where(Words.name==name)).scalar()
+
+
+Base.metadata.create_all(engine)
+DBSession = sessionmaker(bind=engine)
+session = DBSession()

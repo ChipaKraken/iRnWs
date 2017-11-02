@@ -82,7 +82,7 @@ class AuthorChecker(object):
 
 # checker = LangChecker()
 checker = AuthorChecker()
-checker.training('English', 'pg23488.txt')
-checker.training('Dutch', 'pg18066.txt')
+checker.training('English', 'data/pg23488.txt')
+checker.training('Dutch', 'data/pg18066.txt')
 print checker.check('De ontdekker van Amerika')
 print checker.check('The Discoverer of America')

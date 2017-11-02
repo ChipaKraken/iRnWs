@@ -3,6 +3,11 @@ from nltk.tokenize import RegexpTokenizer
 from nltk.stem.snowball import EnglishStemmer
 from nltk.corpus import stopwords
 from collections import defaultdict
+from bz2 import BZ2File as bzopen
+import xml.etree.ElementTree as ET
+from tqdm import tqdm
+
+from db import *
 
 class FileReader(object):
 	"""docstring for FileReader"""
@@ -14,30 +19,75 @@ class FileReader(object):
 				file_path = os.path.join(root, file)
 				with open(file_path) as auto:
 					doc = auto.read()
-					yield {'name': file_path, 'doc': json.dumps(doc)}
+					docs = Docs(name=file_path)
+					if doc_exists(docs.name):
+						docs = session.query(Docs).filter_by(name=docs.name).first()
+					else:
+						session.add(docs)
+						session.commit()
+					yield {'id': docs.id, 'doc': json.dumps(doc)}
 
 class IndexFile(object):
 	"""docstring for IndexFiles"""
-	def __init__(self, file, id):
+	def __init__(self, id, doc):
 		self.tokenizer = RegexpTokenizer(r'\w+')
 		self.stopwords = set(stopwords.words('english'))
 		self.stemmer = EnglishStemmer()
-		self.file = file
+		self.doc = doc
 		self.id = id
 	
 	def get_data(self):
-		index = defaultdict(defaultdict(list).copy)
-		doc = self.file['doc']
-		for start, end in self.tokenizer.span_tokenize(doc):
-			token = doc[start:end].lower()
+		for start, end in self.tokenizer.span_tokenize(self.doc):
+			token = self.doc[start:end].lower()
 			if token in self.stopwords:
 				continue
-			index[self.stemmer.stem(token)][self.id].append(start)
-		return index
+			words = Words(name=token)
+			if word_exists(words.name):
+				words = session.query(Words).filter_by(name=words.name).first()
+			else:
+				session.add(words)
+				session.commit()
+			index = Index(doc_id=self.id, word_id=words.id, beg=start)
+			session.add(index)
+		session.commit()
 
-books = FileReader("../python-3.6.3-docs-text/using")
-book_count = 0
-for x in books.read():
-	tokens = IndexFile(x, book_count)
-	book_count+=1
-	print tokens.get_data()
+class WikiReader(object):
+	"""docstring for ClassName"""
+	def __init__(self, path):
+		self.file = bzopen(path)
+		
+	def readNextPage(self):
+		page = ''
+		for line in self.file:
+			line = str(line).strip()
+			if line == '<page>':
+				page = line
+			elif line == '</page>':
+				page += '\n' + line
+				yield ET.fromstring(page)
+			elif page != '':
+				page += '\n' + line
+
+wiki = WikiReader('../../../enwiki-20171020-pages-articles1.xml-p10p30302.bz2')
+for p in tqdm(wiki.readNextPage()):
+	title = p.find('title').text
+# for p in tqdm(wiki.readNextPage()):
+# 	title = p.find('title').text
+# 	try:
+# 		title = p.find('redirect').attrib['title']
+# 	except Exception as e:
+# 		pass
+# 	id = Docs(name=title)
+# 	if doc_exists(id.name):
+# 		id = session.query(Docs).filter_by(name=id.name).first()
+# 	else:
+# 		session.add(id)
+# 		session.commit()
+# 	doc = p.find('revision').find('text').text
+# 	tokens = IndexFile(id.id, doc)
+# 	tokens.get_data()
+
+
+# books = FileReader("data/")
+# for x in books.read():
+# 	tokens = IndexFile(x['id'], x['doc'])
