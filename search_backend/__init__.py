@@ -6,8 +6,10 @@ from nltk.tokenize import RegexpTokenizer
 from nltk.stem.snowball import EnglishStemmer
 from nltk.corpus import stopwords
 from collections import defaultdict
+from db import *
 import json
 import re
+
 
 def read_all_files():
 	data = []
@@ -37,7 +39,7 @@ files = read_all_files()
 google = index_files()
 
 
-def search(query_string):
+def search_file(query_string):
 	result_list = []
 	search_results = defaultdict(int)
 	temp_data = {}
@@ -58,3 +60,66 @@ def search(query_string):
 				'href': 'https://docs.python.org/3'+files[x]['name'][22:-3]+'html'
 			})
 	return result_list
+
+
+def search(query_string):
+	result_list = []
+	search_results = defaultdict(int)
+	res = defaultdict(float)
+	word_ids = []
+	for word in re.findall('\w+', query_string):
+		if word in stopwords:
+			continue
+		words = session.query(Words).filter_by(name=stemmer.stem(word.lower())).first()
+		word_ids.append(words.id)
+	results = session.query(
+		Index.doc_id
+	).filter(
+		Docs.id == Index.doc_id,
+		Index.word_id.in_(word_ids)
+	).distinct(
+		Docs.name
+	).all()
+	newlist = []
+	for i, in results:
+		if i not in newlist:
+			newlist.append(i)
+	frq = session.query(
+		Index.doc_id,
+		func.count(Index.doc_id)
+	).group_by(Index.doc_id).filter(
+		Index.doc_id.in_(newlist),
+		Index.word_id.in_(word_ids)
+	).all()
+	amt = session.query(
+		Index.doc_id,
+		func.count(Index.doc_id)
+	).group_by(Index.doc_id).filter(
+		Index.doc_id.in_(newlist)
+	).all()
+	for i, c in frq:
+		res[i] = c
+	for i, c in amt:
+		res[i] /= float(c)
+	search_results = dict(res)
+	search_results = dict(sorted(search_results.items(), key=lambda k_v: k_v[1], reverse=True))
+	
+	results = session.query(
+		Docs.id,
+		Docs.name
+	).filter(
+		Docs.id.in_([x-1 for x in search_results.keys()])
+	).all()
+	for id, doc_name in results:
+		result_list.append({
+				'title': doc_name,
+				'snippet': search_results[id+1],
+				'href': 'https://en.wikipedia.org/wiki/'+'_'.join(doc_name.split(' '))
+			})
+	return result_list
+	# return results
+
+print search('leo davinci')
+# 	print word.name
+# 	print index.beg
+# 	print '-------------------------------'

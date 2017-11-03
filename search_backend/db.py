@@ -1,9 +1,9 @@
-from sqlalchemy import Table, Column, Integer, String, MetaData, ForeignKey, create_engine
+from sqlalchemy import Table, Column, Integer, String, MetaData, ForeignKey, create_engine, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import exists
 
-engine = create_engine('postgresql://python:jylan@localhost/kraken')
+engine = create_engine('postgresql://python:jylan@localhost/kraken', pool_size=20, max_overflow=0)
 metadata = MetaData()
 Base = declarative_base()
 Base.metadata.bind = engine
